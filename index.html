@@ -1,0 +1,114 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#fff;font-family:system-ui,-apple-system,sans-serif;}
+canvas{display:block;border-radius:12px;border:1.5px solid #e8e8e8;touch-action:none;}
+.fml{font-size:13px;padding:10px 16px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#2c2c2a;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap;}
+.pill{font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:6px 14px;white-space:nowrap;}
+.btn{padding:7px 15px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #d0d0d0;background:#fff;color:#2c2c2a;}
+.btn.on{border-color:#185fa5;background:#e6f1fb;color:#185fa5;}
+.btn.mode.on{border-color:#0F6E56;background:#e7f6ef;color:#0F6E56;}
+.val{min-width:58px;text-align:center;font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:5px 10px;}
+.info{font-size:12px;padding:8px 14px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#555;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.7;}
+input[type=range]{flex:1;min-width:100px;}
+</style>
+
+<canvas id="cv" style="width:100%;height:56vh;min-height:340px;"></canvas>
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <button class="btn mode on" id="mF" onclick="setMode('fente')">Fente</button>
+  <button class="btn mode" id="mO" onclick="setMode('obstacle')">Obstacle</button>
+  <button class="btn" id="bI" onclick="showI=!showI;this.className=showI?'btn on':'btn';this.textContent=showI?'Intensité':'Champ';">Champ</button>
+  <button class="btn on" id="bP" onclick="paused=!paused;this.className=paused?'btn':'btn on';this.textContent=paused?'Lecture':'Pause';">Pause</button>
+  <button class="btn" onclick="resetField()">Relancer</button>
+</div>
+<div class="row">
+  <span class="pill" id="szLab" style="color:#185fa5;border-color:#b5d4f4;">largeur a / λ</span>
+  <input type="range" id="sz" min="0.3" max="8" value="1" step="0.05" style="accent-color:#378ADD;max-width:260px;">
+  <span class="val" id="szv" style="color:#185fa5;border-color:#b5d4f4;">1.00</span>
+</div>
+<div class="info" id="info"></div>
+
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W=0,H=0,dpr=1,paused=false,mode='fente',showI=false,ratio=1;
+const NX=280,NY=160,C2=0.45,P=18,XS=8,XB=96;
+const lambda=Math.sqrt(C2)*P;                        // ≈12 cellules
+let u0=new Float32Array(NX*NY),u1=new Float32Array(NX*NY),u2=new Float32Array(NX*NY);
+let barrier=new Uint8Array(NX*NY),Iacc=new Float32Array(NX*NY),dmp=new Float32Array(NX*NY);
+let step=0,Imax=1e-6;
+const off=document.createElement('canvas');off.width=NX;off.height=NY;const octx=off.getContext('2d');
+const img=octx.createImageData(NX,NY),dat=img.data;
+const IDX=(i,j)=>i+j*NX;
+function buildDamp(){const DM=16;for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+  let f=1;const dl=Math.min(i,NX-1-i,j,NY-1-j);if(dl<DM)f=0.92+0.08*(dl/DM);dmp[IDX(i,j)]=f;}}
+function buildBarrier(){barrier.fill(0);const yc=NY/2,half=ratio*lambda/2;
+  for(let j=0;j<NY;j++){let solid;
+    if(mode==='fente')solid=Math.abs(j-yc)>half; else solid=Math.abs(j-yc)<half;
+    if(solid)for(let i=XB-1;i<=XB+1;i++)barrier[IDX(i,j)]=1;}}
+function resetField(){u0.fill(0);u1.fill(0);u2.fill(0);Iacc.fill(0);step=0;Imax=1e-6;}
+buildDamp();buildBarrier();
+
+function setMode(m){mode=m;document.getElementById('mF').className='btn mode'+(m==='fente'?' on':'');
+  document.getElementById('mO').className='btn mode'+(m==='obstacle'?' on':'');
+  document.getElementById('szLab').textContent=(m==='fente'?'largeur a / λ':'taille d / λ');
+  buildBarrier();resetField();}
+document.getElementById('sz').addEventListener('input',e=>{ratio=+e.target.value;document.getElementById('szv').textContent=ratio.toFixed(2);buildBarrier();});
+
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||700,nH=Math.round(r.height)||340;
+  if(nW!==W||nH!==H){W=nW;H=nH;cv.width=W*dpr;cv.height=H*dpr;}ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+function stepSim(){
+  for(let j=1;j<NY-1;j++)for(let i=1;i<NX-1;i++){const k=IDX(i,j);
+    if(barrier[k]){u2[k]=0;continue;}
+    const lap=u1[k+1]+u1[k-1]+u1[k+NX]+u1[k-NX]-4*u1[k];
+    u2[k]=2*u1[k]-u0[k]+C2*lap;}
+  const val=Math.sin(2*Math.PI*step/P);
+  for(let j=1;j<NY-1;j++){const k=IDX(XS,j);if(!barrier[k])u2[k]=val;}
+  for(let k=0;k<NX*NY;k++){u2[k]*=dmp[k];Iacc[k]=0.97*Iacc[k]+0.03*u2[k]*u2[k];}
+  const t=u0;u0=u1;u1=u2;u2=t;step++;}
+
+function render(){
+  let mx=1e-6;if(showI){for(let k=0;k<NX*NY;k++)if(Iacc[k]>mx)mx=Iacc[k];Imax=0.9*Imax+0.1*mx;}
+  const norm=0.42,Inorm=Math.max(1e-6,Imax);
+  for(let k=0;k<NX*NY;k++){let r,g,b;
+    if(barrier[k]){r=70;g=74;b=80;}
+    else if(showI){let v=Math.min(1,Math.sqrt(Iacc[k]/Inorm));r=255;g=Math.round(255-150*v);b=Math.round(255-235*v);}
+    else{let v=u1[k]/norm;if(v>1)v=1;if(v<-1)v=-1;
+      if(v>=0){r=Math.round(255-29*v);g=Math.round(255-180*v);b=Math.round(255-181*v);}
+      else{const a=-v;r=Math.round(255-200*a);g=Math.round(255-117*a);b=Math.round(255-34*a);}}
+    const p=k*4;dat[p]=r;dat[p+1]=g;dat[p+2]=b;dat[p+3]=255;}
+  octx.putImageData(img,0,0);
+  ctx.imageSmoothingEnabled=true;ctx.drawImage(off,0,0,NX,NY,0,0,W,H);
+}
+
+function regimeText(){const R=ratio;
+  if(mode==='fente'){
+    if(R<0.6)return['λ ≫ a','L\'onde ne traverse quasiment pas la fente (elle est presque bloquée).'];
+    if(R<1.6)return['λ ≈ a','Diffraction maximale : l\'onde envahit tout l\'espace au-delà de l\'écran (fronts quasi circulaires, comme une source ponctuelle).'];
+    if(R<6)return['λ ≤ a ≤ 10λ','La propagation se fait dans un cône, d\'autant plus évasé que la fente est étroite.'];
+    return['a ≫ λ','Diffraction faible : propagation quasi rectiligne, le faisceau garde à peu près la largeur de la fente (a>100λ ⇒ rayon quasi parfait).'];
+  } else {
+    if(R<0.7)return['d < λ','L\'onde contourne l\'obstacle : presque pas d\'ombre derrière lui.'];
+    if(R<1.6)return['d ≈ λ','Derrière l\'obstacle : succession de bandes d\'intensité variable (figure de diffraction).'];
+    return['d > λ','Propagation rectiligne : zone d\'ombre nette derrière l\'obstacle.'];
+  }}
+
+function draw(){syncSize();if(!paused){stepSim();stepSim();}render();
+  // repères
+  ctx.fillStyle='rgba(60,60,58,0.75)';ctx.font='600 12px system-ui';ctx.textAlign='left';
+  ctx.fillText('onde plane →',W*0.02,H*0.10);
+  ctx.textAlign='center';ctx.fillText(mode==='fente'?'écran + fente':'obstacle',XB/NX*W,H*0.07);
+  // échelle λ
+  const lpx=lambda/NX*W;ctx.strokeStyle='rgba(60,60,58,0.7)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W*0.02,H*0.94);ctx.lineTo(W*0.02+lpx,H*0.94);ctx.stroke();
+  ctx.fillStyle='rgba(60,60,58,0.75)';ctx.textAlign='left';ctx.font='11px system-ui';ctx.fillText('λ',W*0.02+lpx+4,H*0.945);
+  const reg=regimeText();
+  document.getElementById('fml').innerHTML='<b>Diffraction</b> — l\'étalement de l\'onde dépend du rapport <b style="color:#185fa5">'+(mode==='fente'?'a/λ':'d/λ')+'</b> (a = ouverture, d = obstacle, λ = longueur d\'onde)';
+  document.getElementById('info').innerHTML=(mode==='fente'?'a/λ = ':'d/λ = ')+ratio.toFixed(2)+' → <b style="color:#0F6E56">'+reg[0]+'</b> : '+reg[1]+
+    (mode==='fente'?' &nbsp;·&nbsp; (un trou circulaire donne le même effet, mais l\'étalement se fait en cône dans les 3 dimensions.)':'')+
+    ' &nbsp;·&nbsp; Bascule « Champ / Intensité » pour voir la figure moyenne.';
+  requestAnimationFrame(draw);}
+draw();
+</script>
