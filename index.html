@@ -71,13 +71,17 @@ a{color:inherit}
 @media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
   .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
   input[type=range]{min-width:0!important}.val{min-width:0!important}}
-.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:600 .9rem var(--f-num)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink)}
-.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:7px!important;color:var(--ink2)!important;
-  font:700 .82rem var(--f-ui)!important;padding:7px 13px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
 .btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
 .btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
-.fml{background:var(--sel)!important;border:0!important;border-radius:10px!important;font:400 1.06rem/1.7 var(--f-math)!important;color:var(--ink);padding:10px 14px!important;margin:12px 0!important}
-.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:500 .84rem/1.8 var(--f-num)!important;color:var(--muted)!important;padding:9px 14px!important}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
 select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
 input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
 input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
@@ -95,7 +99,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
 .sfa-list a:hover{background:var(--press)}
 .sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
-.sfa-list a i{font:600 11px var(--f-num);font-style:normal;color:var(--faint)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
 .sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
 .sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
 .sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
@@ -135,8 +139,8 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
 </script>
 <header class="sfa-top"><div class="in">
   <a class="sfa-logo" href="https://sfascienceforall-cell.github.io/simulations/"><i>SFA</i>Science For All</a>
-  <nav class="sfa-nav"><a class="on" href="https://sfascienceforall-cell.github.io/simulations/">Simulations</a><a href="#">Prépa médecine</a></nav>
-  <a class="sfa-cta" href="#">Découvrir la prépa</a></div></header>
+  <nav class="sfa-nav"><a class="on" href="https://sfascienceforall-cell.github.io/simulations/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulations/#EX">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulations/prepa/">Prépa médecine</a></nav>
+  <a class="sfa-cta" href="https://sfascienceforall-cell.github.io/simulations/prepa/">Découvrir la prépa</a></div></header>
 <div class="sfa-page">
 <nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulations/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulations/#PH5">PH5 · Ondes</a>›<b>Diffraction</b></nav>
 <div class="sfa-grid"><main style="min-width:0">
@@ -206,15 +210,29 @@ function render(){
   let mx=1e-6;if(showI){for(let k=0;k<NX*NY;k++)if(Iacc[k]>mx)mx=Iacc[k];Imax=0.9*Imax+0.1*mx;}
   const norm=0.42,Inorm=Math.max(1e-6,Imax);
   for(let k=0;k<NX*NY;k++){let r,g,b;
-    if(barrier[k]){r=70;g=74;b=80;}
-    else if(showI){let v=Math.min(1,Math.sqrt(Iacc[k]/Inorm));r=255;g=Math.round(255-150*v);b=Math.round(255-235*v);}
+    if(barrier[k]){r=19;g=35;b=58;}
+    else if(showI){let v=Math.min(1,Math.sqrt(Iacc[k]/Inorm));
+      if(v<0.55){const a=v/0.55;r=Math.round(255-11*a);g=Math.round(255-59*a);b=Math.round(255-145*a);}
+      else{const a=(v-0.55)/0.45;r=Math.round(244-58*a);g=Math.round(196-79*a);b=Math.round(110-87*a);}}
     else{let v=u1[k]/norm;if(v>1)v=1;if(v<-1)v=-1;
       if(v>=0){r=Math.round(255-29*v);g=Math.round(255-180*v);b=Math.round(255-181*v);}
       else{const a=-v;r=Math.round(255-200*a);g=Math.round(255-117*a);b=Math.round(255-34*a);}}
     const p=k*4;dat[p]=r;dat[p+1]=g;dat[p+2]=b;dat[p+3]=255;}
   octx.putImageData(img,0,0);
-  ctx.imageSmoothingEnabled=true;ctx.drawImage(off,0,0,NX,NY,0,0,W,H);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(off,vx0,0,NX-vx0,NY,0,0,(NX-vx0)*sxp,H);
+  // écran / obstacle dessiné en vectoriel (net, coins arrondis, ombre douce)
+  const bw=Math.max(7,3*sxp),bx=CX(XB)-bw/2;let j=0;
+  while(j<NY){if(!barrier[IDX(XB,j)]){j++;continue;}let j2=j;while(j2<NY&&barrier[IDX(XB,j2)])j2++;
+    const y0=j*syp-(j===0?6:0),y1=j2*syp+(j2>=NY?6:0);
+    ctx.save();ctx.shadowColor='rgba(19,35,58,0.25)';ctx.shadowBlur=6;ctx.shadowOffsetX=1.5;
+    const g=ctx.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#3a4a60');g.addColorStop(0.45,'#13233a');g.addColorStop(1,'#0b1626');
+    ctx.fillStyle=g;rrect(bx,y0,bw,y1-y0,3);ctx.fill();ctx.restore();j=j2;}
 }
+function rrect(x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+// cadrage : déformation horizontale limitée (sinon les fronts circulaires deviennent des ellipses sur téléphone)
+let vx0=0,sxp=1,syp=1;const CX=i=>(i-vx0)*sxp;
+function frameView(){syp=H/NY;sxp=W/NX;if(syp/sxp>1.3){sxp=syp/1.3;const vis=W/sxp;vx0=Math.max(0,Math.min(NX-vis,XB-0.42*vis));}else vx0=0;}
 
 function regimeText(){const R=ratio;
   if(mode==='fente'){
@@ -228,18 +246,25 @@ function regimeText(){const R=ratio;
     return['d > λ','Propagation rectiligne : zone d\'ombre nette derrière l\'obstacle.'];
   }}
 
-function draw(){syncSize();if(!paused){stepSim();stepSim();}render();
+function draw(){syncSize();frameView();if(!paused){stepSim();stepSim();}render();
   // repères
   // étiquettes sur fond blanc semi-opaque (lisibles par-dessus le champ coloré)
-  const tag=(t,x,y,al)=>{ctx.textAlign=al;const w=ctx.measureText(t).width,x0=al==='center'?x-w/2:x;
-    ctx.fillStyle='rgba(255,255,255,0.82)';ctx.fillRect(x0-4,y-12,w+8,17);ctx.fillStyle='rgba(60,60,58,0.9)';ctx.fillText(t,x,y);};
-  ctx.font='600 12px Mulish,system-ui,sans-serif';
-  tag('onde plane →',W*0.02,H*0.10,'left');
-  if(mode==='fente')tag('écran + fente',XB/NX*W+8,H*0.07,'left');else tag('obstacle',XB/NX*W,H*0.07,'center');
-  // échelle λ
-  const lpx=lambda/NX*W;ctx.fillStyle='rgba(255,255,255,0.82)';ctx.fillRect(W*0.02-4,H*0.94-12,lpx+22,18);
-  ctx.strokeStyle='rgba(60,60,58,0.7)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W*0.02,H*0.94);ctx.lineTo(W*0.02+lpx,H*0.94);ctx.stroke();
-  ctx.fillStyle='rgba(60,60,58,0.9)';ctx.textAlign='left';ctx.font='11px Mulish,system-ui,sans-serif';ctx.fillText('λ',W*0.02+lpx+4,H*0.945);
+  // panneaux : fond blanc, bord #e3e7ed, coins 8 px
+  const tag=(t,x,y,al,col)=>{ctx.font='700 12px Mulish,system-ui,sans-serif';const w=ctx.measureText(t).width+18,h=24;
+    let x0=al==='center'?x-w/2:al==='right'?x-w:x;x0=Math.max(6,Math.min(W-6-w,x0));
+    ctx.save();ctx.shadowColor='rgba(19,35,58,0.10)';ctx.shadowBlur=6;ctx.shadowOffsetY=1;ctx.fillStyle='rgba(255,255,255,0.96)';rrect(x0,y,w,h,8);ctx.fill();ctx.restore();
+    ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;rrect(x0,y,w,h,8);ctx.stroke();
+    ctx.fillStyle=col||'#13233a';ctx.textAlign='left';ctx.fillText(t,x0+9,y+16.5);return x0+w;};
+  const xb=CX(XB);
+  tag('onde plane →',10,10,'left','#13233a');
+  if(mode==='fente')tag(W<520?'écran':'écran + fente',xb+12,10,'left');else tag('obstacle',xb,10,'center');
+  // échelle λ (dans un panneau)
+  {const lpx=lambda*sxp;ctx.font='800 13px Mulish,system-ui,sans-serif';const w=lpx+40,h=26,x0=10,y0=H-36;
+   ctx.save();ctx.shadowColor='rgba(19,35,58,0.10)';ctx.shadowBlur=6;ctx.shadowOffsetY=1;ctx.fillStyle='rgba(255,255,255,0.96)';rrect(x0,y0,w,h,8);ctx.fill();ctx.restore();
+   ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;rrect(x0,y0,w,h,8);ctx.stroke();
+   const ly=y0+h/2;ctx.strokeStyle='#13233a';ctx.lineWidth=2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x0+10,ly);ctx.lineTo(x0+10+lpx,ly);ctx.moveTo(x0+10,ly-5);ctx.lineTo(x0+10,ly+5);ctx.moveTo(x0+10+lpx,ly-5);ctx.lineTo(x0+10+lpx,ly+5);ctx.stroke();
+   ctx.fillStyle='#13233a';ctx.textAlign='left';ctx.fillText('λ',x0+lpx+17,ly+5);}
+  if(showI)tag('intensité moyenne',W-10,H-36,'right','#BA7517');
   const reg=regimeText();
   document.getElementById('fml').innerHTML='<b>Diffraction</b> — l\'étalement de l\'onde dépend du rapport <b style="color:#185fa5">'+(mode==='fente'?'a/λ':'d/λ')+'</b> (a = ouverture, d = obstacle, λ = longueur d\'onde)';
   document.getElementById('info').innerHTML=(mode==='fente'?'a/λ = ':'d/λ = ')+ratio.toFixed(2)+' → <b style="color:#0F6E56">'+reg[0]+'</b> : '+reg[1]+
@@ -251,7 +276,7 @@ draw();
 </section></main>
 <aside class="sfa-side">
   <div class="sfa-list"><h2>PH5 · Ondes, interférences, diffraction<span>7 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/Onde-progressive/"><i>01</i>Onde progressive</a></li><li><a href="https://sfascienceforall-cell.github.io/Fonction-d-onde-f-x-vt-/"><i>02</i>Fonction d&#x27;onde f(x − vt)</a></li><li><a href="https://sfascienceforall-cell.github.io/Relation-v-f/"><i>03</i>Relation v = λf</a></li><li><a href="https://sfascienceforall-cell.github.io/Onde-progressive-et-Onde-stationnaire/"><i>04</i>Onde progressive et stationnaire</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/diffraction/"><i>05</i>Diffraction</a></li><li><a href="https://sfascienceforall-cell.github.io/yung/"><i>06</i>Fentes de Young</a></li><li><a href="https://sfascienceforall-cell.github.io/effet-de-battement/"><i>07</i>Battements</a></li></ol></div>
-  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="#">Voir la prépa</a></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sfascienceforall-cell.github.io/simulations/prepa/">Voir la prépa</a></div>
 </aside></div></div>
 <footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
 </body>
